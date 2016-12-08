@@ -3,7 +3,7 @@ import tkinter
 from datetime import date
 from threading import Thread
 
-from forexdata import ForexData
+from src.forexdata import ForexData
 
 
 class MainFrame(tkinter.Frame):

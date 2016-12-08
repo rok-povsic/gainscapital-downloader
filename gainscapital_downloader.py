@@ -1,6 +1,6 @@
 import tkinter
 
-from mainframe import MainFrame
+from src.mainframe import MainFrame
 
 
 if __name__ == '__main__':
