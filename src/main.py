@@ -1,25 +1,98 @@
+import tkinter
+
 from datetime import date
+from threading import Thread
 
 from forexdata import ForexData
 
 
 class Main:
-    def start(self):
-        date_from = date(2014, 1, 1)
-        date_to = date(2016, 11, 1)
-
-        symbols = [
-            "AUD_USD",
-            "EUR_USD",
-            "GBP_USD",
-            "NZD_USD",
-            "USD_CAD",
-            "USD_JPY",
-        ]
-
+    def start(self, symbols, date_from, date_to):
         forex_data = ForexData(date_from, date_to, symbols)
         forex_data.acquire()
 
 
+class Example(tkinter.Frame):
+    def __init__(self, parent):
+        tkinter.Frame.__init__(self, parent)
+
+        self.parent = parent
+        self.initUi()
+
+    def initUi(self):
+        self.parent.title("GainsCapital Downloader")
+        self.init_markets()
+        self.init_dates()
+        self.init_button()
+
+    def init_button(self):
+        tkinter.Button(self, text="Start download", command=self.start_download).pack()
+
+    def init_dates(self):
+        dts = tkinter.Frame()
+        tkinter.Label(dts, text="From date:").pack(side=tkinter.LEFT)
+        self.from_entry = tkinter.StringVar(value="2014/1")
+        tkinter.Entry(dts, textvariable=self.from_entry, width=8).pack(side=tkinter.LEFT)
+        tkinter.Label(dts, text="To date:").pack(side=tkinter.LEFT)
+        self.to_entry = tkinter.StringVar(value="2017/1")
+        tkinter.Entry(dts, textvariable=self.to_entry, width=8).pack()
+        dts.pack()
+
+    def init_markets(self):
+        markets = tkinter.LabelFrame()
+        self.isAudUsd = tkinter.IntVar()
+        tkinter.Checkbutton(markets, text="AUD/USD", variable=self.isAudUsd).pack(side=tkinter.LEFT)
+        self.isEurUsd = tkinter.IntVar()
+        tkinter.Checkbutton(markets, text="EUR/USD", variable=self.isEurUsd).pack(side=tkinter.LEFT)
+        self.isGbpUsd = tkinter.IntVar()
+        tkinter.Checkbutton(markets, text="GBP/USD", variable=self.isGbpUsd).pack(side=tkinter.LEFT)
+        self.isNzdUsd = tkinter.IntVar()
+        tkinter.Checkbutton(markets, text="NZD/USD", variable=self.isNzdUsd).pack(side=tkinter.LEFT)
+        self.isUsdCad = tkinter.IntVar()
+        tkinter.Checkbutton(markets, text="USD/CAD", variable=self.isUsdCad).pack(side=tkinter.LEFT)
+        self.isUsdJpy = tkinter.IntVar()
+        tkinter.Checkbutton(markets, text="USD/JPY", variable=self.isUsdJpy).pack()
+        markets.pack()
+
+    def start_download(self):
+        t = Thread(target=self.start_download_thread)
+        t.setDaemon(True)
+        t.start()
+
+    def start_download_thread(self):
+        symbols = []
+
+        if self.isAudUsd.get():
+            symbols.append("AUD_USD")
+        if self.isEurUsd.get():
+            symbols.append("EUR_USD")
+        if self.isGbpUsd.get():
+            symbols.append("GBP_USD")
+        if self.isNzdUsd.get():
+            symbols.append("NZD_USD")
+        if self.isUsdCad.get():
+            symbols.append("USD_CAD")
+        if self.isUsdJpy.get():
+            symbols.append("USD_JPY")
+
+        from_spl = self.from_entry.get().split("/")
+        from_year = int(from_spl[0])
+        from_month = int(from_spl[1])
+
+        to_spl = self.to_entry.get().split("/")
+        to_year = int(to_spl[0])
+        to_month = int(to_spl[1])
+
+        date_from = date(from_year, from_month, 1)
+        date_to = date(to_year, to_month, 1)
+        Main().start(symbols, date_from, date_to)
+
 if __name__ == '__main__':
-    Main().start()
+    # Main().start()
+
+    main_window = tkinter.Tk()
+    app = Example(main_window)
+    app.pack()
+
+    app.mainloop()
+
