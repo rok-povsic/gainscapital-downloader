@@ -11,17 +11,17 @@ class MainFrame(tkinter.Frame):
         tkinter.Frame.__init__(self, parent)
 
         parent.title("GainsCapital Downloader")
-        self.initUi()
+        self._init_ui()
 
-    def initUi(self):
-        self.init_markets()
-        self.init_dates()
-        self.init_button()
+    def _init_ui(self):
+        self._init_markets()
+        self._init_dates()
+        self._init_button()
 
-    def init_button(self):
+    def _init_button(self):
         tkinter.Button(self, text="Start download", command=self.start_download).pack()
 
-    def init_dates(self):
+    def _init_dates(self):
         dts = tkinter.Frame()
         tkinter.Label(dts, text="From date:").pack(side=tkinter.LEFT)
         self.from_entry = tkinter.StringVar(value="2014/1")
@@ -31,7 +31,7 @@ class MainFrame(tkinter.Frame):
         tkinter.Entry(dts, textvariable=self.to_entry, width=8).pack()
         dts.pack()
 
-    def init_markets(self):
+    def _init_markets(self):
         markets = tkinter.LabelFrame()
         self.isAudUsd = tkinter.IntVar()
         tkinter.Checkbutton(markets, text="AUD/USD", variable=self.isAudUsd).pack(side=tkinter.LEFT)

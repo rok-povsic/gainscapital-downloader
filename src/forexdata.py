@@ -10,8 +10,8 @@ from dateutil.relativedelta import relativedelta
 
 
 class ForexData:
-    _data_dir = "../data"
-    _temp_dir = "../temp"
+    _data_dir = "data"
+    _temp_dir = "temp"
 
     def __init__(self, date_from, date_to, symbols):
         self._date_from = date_from
@@ -35,11 +35,11 @@ class ForexData:
                     os.mkdir(symbol_dir)
                 for week in (1, 2, 3, 4, 5):
                     try:
-                        zip = self._acquire_zip(current_date, week, symbol)
+                        file_zip = self._acquire_zip(current_date, week, symbol)
                     except Exception as ex:
                         print("\tUnable to get zip: {}".format(ex))
                         continue
-                    temp_path = self._extracted_zip(zip)
+                    temp_path = self._extracted_zip(file_zip)
                     self._transform(temp_path, symbol_dir)
             current_date += relativedelta(months=1)
         os.rmdir(self._temp_dir)
@@ -53,17 +53,17 @@ class ForexData:
             dt.year, dt.month, dt.strftime("%B"), symbol, week
         )
         request = requests.get(url)
-        zip = zipfile.ZipFile(io.BytesIO(request.content))
-        return zip
+        file_zip = zipfile.ZipFile(io.BytesIO(request.content))
+        return file_zip
 
-    def _extracted_zip(self, zip):
+    def _extracted_zip(self, file_zip):
         """
-        Exctracts zip to a temporary file and returns the path.
+        Extracts zip to a temporary file and returns the path.
         """
-        zip_filenames = zip.namelist()
+        zip_filenames = file_zip.namelist()
         if len(zip_filenames) != 1:
             raise Exception("There should be exactly 1 file in the downloaded zip file.")
-        zip.extract(zip_filenames[0], self._temp_dir)
+        file_zip.extract(zip_filenames[0], self._temp_dir)
         temp_path = os.path.join(self._temp_dir, zip_filenames[0])
         return temp_path
 
@@ -91,6 +91,7 @@ class ForexData:
         """
         all_day_lines = []
         day_lines = []
+        dt = None
         with open(temp_path) as file_read:
             csv_file = csv.reader(file_read, delimiter=",")
             header = next(csv_file)
@@ -98,18 +99,18 @@ class ForexData:
             first = True
             last_date = None
             for line in csv_file:
-                dtime, bid_str, ask_str = self._parsed_line(header, line)
+                dt, bid_str, ask_str = self._parsed_line(header, line)
                 if first:
-                    last_date = dtime.date()
+                    last_date = dt.date()
                     first = False
-                if last_date < dtime.date():
+                if last_date < dt.date():
                     all_day_lines.append((last_date, day_lines))
                     day_lines = []
-                    last_date = dtime.date()
+                    last_date = dt.date()
 
-                day_lines.append("{};{};{}".format(dtime.strftime("%Y-%m-%d %H:%M:%S.%f"), bid_str, ask_str))
+                day_lines.append("{};{};{}".format(dt.strftime("%Y-%m-%d %H:%M:%S.%f"), bid_str, ask_str))
 
-        all_day_lines.append((dtime, day_lines))
+        all_day_lines.append((dt, day_lines))
         return all_day_lines
 
     def _parsed_line(self, header, line):
