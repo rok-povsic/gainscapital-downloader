@@ -30,28 +30,35 @@ class ForexData:
         current_date = self._date_from
         while current_date <= self._date_to:
             for symbol in self._symbols:
-                symbol_dir = os.path.join(self._data_dir, symbol)
-                if not os.path.exists(symbol_dir):
-                    os.mkdir(symbol_dir)
-                for week in (1, 2, 3, 4, 5):
-                    try:
-                        file_zip = self._acquire_zip(current_date, week, symbol)
-                    except Exception as ex:
-                        print("\tUnable to get zip: {}".format(ex))
-                        continue
-                    temp_path = self._extracted_zip(file_zip)
-                    self._transform(temp_path, symbol_dir)
+                self._acquire_for_month(current_date, symbol)
             current_date += relativedelta(months=1)
         os.rmdir(self._temp_dir)
+
+    def _acquire_for_month(self, current_date, symbol):
+        """
+        Gets all the forex data for a certain month.
+        """
+        symbol_dir = os.path.join(self._data_dir, symbol)
+        if not os.path.exists(symbol_dir):
+            os.mkdir(symbol_dir)
+        for week in (1, 2, 3, 4, 5):
+            try:
+                file_zip = self._acquire_zip(
+                    current_date, week, symbol
+                )
+            except Exception as ex:
+                print("\tUnable to get zip: {}".format(ex))
+                continue
+            temp_path = self._extracted_zip(file_zip)
+            self._transform(temp_path, symbol_dir)
 
     def _acquire_zip(self, dt, week, symbol):
         """
         Downloads zip file to a memory and returns it.
         """
         print("Downloading {}, week {}, symbol {}".format(dt, week, symbol))
-        url = "http://ratedata.gaincapital.com/{:d}/{:02d} {}/{}_Week{:d}.zip".format(
-            dt.year, dt.month, dt.strftime("%B"), symbol, week
-        )
+        url = "http://ratedata.gaincapital.com/{:d}/{:02d} {}/{}_Week{:d}.zip"\
+            .format(dt.year, dt.month, dt.strftime("%B"), symbol, week)
         request = requests.get(url)
         file_zip = zipfile.ZipFile(io.BytesIO(request.content))
         return file_zip
@@ -62,14 +69,17 @@ class ForexData:
         """
         zip_filenames = file_zip.namelist()
         if len(zip_filenames) != 1:
-            raise Exception("There should be exactly 1 file in the downloaded zip file.")
+            raise Exception(
+                "There should be exactly 1 file in the downloaded zip file."
+            )
         file_zip.extract(zip_filenames[0], self._temp_dir)
         temp_path = os.path.join(self._temp_dir, zip_filenames[0])
         return temp_path
 
     def _transform(self, temp_path, symbol_dir):
         """
-        Transforms downloaded file into multiple files, each for one day.
+        Transforms downloaded file into multiple files,
+        each for one day.
         """
         for dt, daily_lines in self._daily_lines(temp_path):
             final_path = self._final_csv_path(dt, symbol_dir)
@@ -83,11 +93,14 @@ class ForexData:
         """
         Returns the path final CSV file should be saved at
         """
-        return os.path.join(symbol_dir, "{}.csv".format(dt.strftime("%Y-%m-%d")))
+        return os.path.join(
+            symbol_dir, "{}.csv".format(dt.strftime("%Y-%m-%d"))
+        )
 
     def _daily_lines(self, temp_path):
         """
-        Returns a list of tuples where item 1 is date and item 2 are lines from CSV for date.
+        Returns a list of tuples where item 1 is date and item 2 are
+        lines from CSV for date.
         """
         all_day_lines = []
         day_lines = []
@@ -108,27 +121,29 @@ class ForexData:
                     day_lines = []
                     last_date = dt.date()
 
-                day_lines.append("{};{};{}".format(dt.strftime("%Y-%m-%d %H:%M:%S.%f"), bid_str, ask_str))
+                day_lines.append("{};{};{}".format(
+                    dt.strftime("%Y-%m-%d %H:%M:%S.%f"), bid_str, ask_str)
+                )
 
         all_day_lines.append((dt, day_lines))
         return all_day_lines
 
     def _parsed_line(self, header, line):
         """
-        Returns datetime, bid and ask from a line. Knows how to handle two datetime formats.
+        Returns datetime, bid and ask from a line.
+        Knows how to handle two datetime formats.
         """
         dt_str = line[header.index("RateDateTime")]
         bid_str = line[header.index("RateBid")]
         ask_str = line[header.index("RateAsk")]
         if '.' in dt_str:
             dt_str_in_microsecond_precision = dt_str[:-3]
-            dt = datetime.strptime(dt_str_in_microsecond_precision, "%Y-%m-%d %H:%M:%S.%f")
+            dt = datetime.strptime(
+                dt_str_in_microsecond_precision, "%Y-%m-%d %H:%M:%S.%f"
+            )
         else:
             dt = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
         return dt, bid_str, ask_str
-
-    def _files_already_downloaded(self, current_date, week, symbol):
-        pass
 
     def _week_of_month(self, dt):
         """

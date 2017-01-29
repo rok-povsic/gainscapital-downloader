@@ -19,13 +19,16 @@ class MainFrame(tkinter.Frame):
         self._init_button()
 
     def _init_button(self):
-        tkinter.Button(self, text="Start download", command=self.start_download).pack()
+        tkinter.Button(
+            self, text="Start download", command=self.start_download
+        ).pack()
 
     def _init_dates(self):
         dts = tkinter.Frame()
         tkinter.Label(dts, text="From date:").pack(side=tkinter.LEFT)
         self.from_entry = tkinter.StringVar(value="2014/1")
-        tkinter.Entry(dts, textvariable=self.from_entry, width=8).pack(side=tkinter.LEFT)
+        tkinter.Entry(dts, textvariable=self.from_entry, width=8) \
+            .pack(side=tkinter.LEFT)
         tkinter.Label(dts, text="To date:").pack(side=tkinter.LEFT)
         self.to_entry = tkinter.StringVar(value="2017/1")
         tkinter.Entry(dts, textvariable=self.to_entry, width=8).pack()
@@ -34,17 +37,23 @@ class MainFrame(tkinter.Frame):
     def _init_markets(self):
         markets = tkinter.LabelFrame()
         self.isAudUsd = tkinter.IntVar()
-        tkinter.Checkbutton(markets, text="AUD/USD", variable=self.isAudUsd).pack(side=tkinter.LEFT)
+        tkinter.Checkbutton(markets, text="AUD/USD", variable=self.isAudUsd) \
+            .pack(side=tkinter.LEFT)
         self.isEurUsd = tkinter.IntVar()
-        tkinter.Checkbutton(markets, text="EUR/USD", variable=self.isEurUsd).pack(side=tkinter.LEFT)
+        tkinter.Checkbutton(markets, text="EUR/USD", variable=self.isEurUsd) \
+            .pack(side=tkinter.LEFT)
         self.isGbpUsd = tkinter.IntVar()
-        tkinter.Checkbutton(markets, text="GBP/USD", variable=self.isGbpUsd).pack(side=tkinter.LEFT)
+        tkinter.Checkbutton(markets, text="GBP/USD", variable=self.isGbpUsd) \
+            .pack(side=tkinter.LEFT)
         self.isNzdUsd = tkinter.IntVar()
-        tkinter.Checkbutton(markets, text="NZD/USD", variable=self.isNzdUsd).pack(side=tkinter.LEFT)
+        tkinter.Checkbutton(markets, text="NZD/USD", variable=self.isNzdUsd) \
+            .pack(side=tkinter.LEFT)
         self.isUsdCad = tkinter.IntVar()
-        tkinter.Checkbutton(markets, text="USD/CAD", variable=self.isUsdCad).pack(side=tkinter.LEFT)
+        tkinter.Checkbutton(markets, text="USD/CAD", variable=self.isUsdCad) \
+            .pack(side=tkinter.LEFT)
         self.isUsdJpy = tkinter.IntVar()
-        tkinter.Checkbutton(markets, text="USD/JPY", variable=self.isUsdJpy).pack()
+        tkinter.Checkbutton(markets, text="USD/JPY", variable=self.isUsdJpy) \
+            .pack()
         markets.pack()
 
     def start_download(self):
